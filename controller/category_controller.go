@@ -1,14 +1,13 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 type CategoryController interface {
-	Create(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
-	Update(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
-	Delete(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
-	FindById(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
-	FindAll(writer http.ResponseWriter, request *http.Request, params httprouter.Params)
+	Create(c *fiber.Ctx) error
+	Update(c *fiber.Ctx) error
+	Delete(c *fiber.Ctx) error
+	FindById(c *fiber.Ctx) error
+	FindAll(c *fiber.Ctx) error
 }

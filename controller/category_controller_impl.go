@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"net/http"
-	"programmerzamannow/belajar-golang-restful-api/helper"
+	"github.com/gofiber/fiber/v2"
 	"programmerzamannow/belajar-golang-restful-api/model/web"
 	"programmerzamannow/belajar-golang-restful-api/service"
 	"strconv"
@@ -19,76 +17,92 @@ func NewCategoryController(categoryService service.CategoryService) CategoryCont
 	}
 }
 
-func (controller *CategoryControllerImpl) Create(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	categoryCreateRequest := web.CategoryCreateRequest{}
-	helper.ReadFromRequestBody(request, &categoryCreateRequest)
-
-	categoryResponse := controller.CategoryService.Create(request.Context(), categoryCreateRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   categoryResponse,
+func (controller *CategoryControllerImpl) Create(c *fiber.Ctx) error {
+	categoryCreateRequest := new(web.CategoryCreateRequest)
+	if err := c.BodyParser(categoryCreateRequest); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(web.WebResponse{
+			Code:   fiber.StatusBadRequest,
+			Status: "Bad Request",
+			Data:   err.Error(),
+		})
 	}
 
-	helper.WriteToResponseBody(writer, webResponse)
+	categoryResponse := controller.CategoryService.Create(c.Context(), *categoryCreateRequest)
+	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:   fiber.StatusOK,
+		Status: "OK",
+		Data:   categoryResponse,
+	})
 }
 
-func (controller *CategoryControllerImpl) Update(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	categoryUpdateRequest := web.CategoryUpdateRequest{}
-	helper.ReadFromRequestBody(request, &categoryUpdateRequest)
+func (controller *CategoryControllerImpl) Update(c *fiber.Ctx) error {
+	categoryUpdateRequest := new(web.CategoryUpdateRequest)
+	if err := c.BodyParser(categoryUpdateRequest); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(web.WebResponse{
+			Code:   fiber.StatusBadRequest,
+			Status: "Bad Request",
+			Data:   err.Error(),
+		})
+	}
 
-	categoryId := params.ByName("categoryId")
-	id, err := strconv.Atoi(categoryId)
-	helper.PanicIfError(err)
-
+	id, err := strconv.Atoi(c.Params("categoryId"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(web.WebResponse{
+			Code:   fiber.StatusBadRequest,
+			Status: "Invalid Category ID",
+			Data:   err.Error(),
+		})
+	}
 	categoryUpdateRequest.Id = id
 
-	categoryResponse := controller.CategoryService.Update(request.Context(), categoryUpdateRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
+	categoryResponse := controller.CategoryService.Update(c.Context(), *categoryUpdateRequest)
+	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:   fiber.StatusOK,
 		Status: "OK",
 		Data:   categoryResponse,
-	}
-
-	helper.WriteToResponseBody(writer, webResponse)
+	})
 }
 
-func (controller *CategoryControllerImpl) Delete(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	categoryId := params.ByName("categoryId")
-	id, err := strconv.Atoi(categoryId)
-	helper.PanicIfError(err)
+func (controller *CategoryControllerImpl) Delete(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("categoryId"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(web.WebResponse{
+			Code:   fiber.StatusBadRequest,
+			Status: "Invalid Category ID",
+			Data:   err.Error(),
+		})
+	}
 
-	controller.CategoryService.Delete(request.Context(), id)
-	webResponse := web.WebResponse{
-		Code:   200,
+	controller.CategoryService.Delete(c.Context(), id)
+	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:   fiber.StatusOK,
 		Status: "OK",
-	}
-
-	helper.WriteToResponseBody(writer, webResponse)
+	})
 }
 
-func (controller *CategoryControllerImpl) FindById(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	categoryId := params.ByName("categoryId")
-	id, err := strconv.Atoi(categoryId)
-	helper.PanicIfError(err)
+func (controller *CategoryControllerImpl) FindById(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("categoryId"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(web.WebResponse{
+			Code:   fiber.StatusBadRequest,
+			Status: "Invalid Category ID",
+			Data:   err.Error(),
+		})
+	}
 
-	categoryResponse := controller.CategoryService.FindById(request.Context(), id)
-	webResponse := web.WebResponse{
-		Code:   200,
+	categoryResponse := controller.CategoryService.FindById(c.Context(), id)
+	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:   fiber.StatusOK,
 		Status: "OK",
 		Data:   categoryResponse,
-	}
-
-	helper.WriteToResponseBody(writer, webResponse)
+	})
 }
 
-func (controller *CategoryControllerImpl) FindAll(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	categoryResponses := controller.CategoryService.FindAll(request.Context())
-	webResponse := web.WebResponse{
-		Code:   200,
+func (controller *CategoryControllerImpl) FindAll(c *fiber.Ctx) error {
+	categoryResponses := controller.CategoryService.FindAll(c.Context())
+	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:   fiber.StatusOK,
 		Status: "OK",
 		Data:   categoryResponses,
-	}
-
-	helper.WriteToResponseBody(writer, webResponse)
+	})
 }
