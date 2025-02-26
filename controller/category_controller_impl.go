@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/aronipurwanto/go-restful-api/exception"
 	"github.com/aronipurwanto/go-restful-api/model/web"
 	"github.com/aronipurwanto/go-restful-api/service"
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,7 @@ func NewCategoryController(categoryService service.CategoryService) CategoryCont
 	}
 }
 
+// Create Category
 func (controller *CategoryControllerImpl) Create(c *fiber.Ctx) error {
 	categoryCreateRequest := new(web.CategoryCreateRequest)
 	if err := c.BodyParser(categoryCreateRequest); err != nil {
@@ -27,14 +29,23 @@ func (controller *CategoryControllerImpl) Create(c *fiber.Ctx) error {
 		})
 	}
 
-	categoryResponse := controller.CategoryService.Create(c.Context(), *categoryCreateRequest)
-	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
-		Code:   fiber.StatusOK,
-		Status: "OK",
+	categoryResponse, err := controller.CategoryService.Create(c.Context(), *categoryCreateRequest)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(web.WebResponse{
+			Code:   fiber.StatusInternalServerError,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(web.WebResponse{
+		Code:   fiber.StatusCreated,
+		Status: "Created",
 		Data:   categoryResponse,
 	})
 }
 
+// Update Category
 func (controller *CategoryControllerImpl) Update(c *fiber.Ctx) error {
 	categoryUpdateRequest := new(web.CategoryUpdateRequest)
 	if err := c.BodyParser(categoryUpdateRequest); err != nil {
@@ -55,7 +66,22 @@ func (controller *CategoryControllerImpl) Update(c *fiber.Ctx) error {
 	}
 	categoryUpdateRequest.Id = id
 
-	categoryResponse := controller.CategoryService.Update(c.Context(), *categoryUpdateRequest)
+	categoryResponse, err := controller.CategoryService.Update(c.Context(), *categoryUpdateRequest)
+	if err != nil {
+		if _, ok := err.(exception.NotFoundError); ok {
+			return c.Status(fiber.StatusNotFound).JSON(web.WebResponse{
+				Code:   fiber.StatusNotFound,
+				Status: "Not Found",
+				Data:   err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(web.WebResponse{
+			Code:   fiber.StatusInternalServerError,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
 		Code:   fiber.StatusOK,
 		Status: "OK",
@@ -63,6 +89,7 @@ func (controller *CategoryControllerImpl) Update(c *fiber.Ctx) error {
 	})
 }
 
+// Delete Category
 func (controller *CategoryControllerImpl) Delete(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("categoryId"))
 	if err != nil {
@@ -73,13 +100,29 @@ func (controller *CategoryControllerImpl) Delete(c *fiber.Ctx) error {
 		})
 	}
 
-	controller.CategoryService.Delete(c.Context(), id)
+	err = controller.CategoryService.Delete(c.Context(), id)
+	if err != nil {
+		if _, ok := err.(exception.NotFoundError); ok {
+			return c.Status(fiber.StatusNotFound).JSON(web.WebResponse{
+				Code:   fiber.StatusNotFound,
+				Status: "Not Found",
+				Data:   err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(web.WebResponse{
+			Code:   fiber.StatusInternalServerError,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
 		Code:   fiber.StatusOK,
-		Status: "OK",
+		Status: "Deleted Successfully",
 	})
 }
 
+// Find Category By ID
 func (controller *CategoryControllerImpl) FindById(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("categoryId"))
 	if err != nil {
@@ -90,7 +133,22 @@ func (controller *CategoryControllerImpl) FindById(c *fiber.Ctx) error {
 		})
 	}
 
-	categoryResponse := controller.CategoryService.FindById(c.Context(), id)
+	categoryResponse, err := controller.CategoryService.FindById(c.Context(), id)
+	if err != nil {
+		if _, ok := err.(exception.NotFoundError); ok {
+			return c.Status(fiber.StatusNotFound).JSON(web.WebResponse{
+				Code:   fiber.StatusNotFound,
+				Status: "Not Found",
+				Data:   err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(web.WebResponse{
+			Code:   fiber.StatusInternalServerError,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
 		Code:   fiber.StatusOK,
 		Status: "OK",
@@ -98,8 +156,17 @@ func (controller *CategoryControllerImpl) FindById(c *fiber.Ctx) error {
 	})
 }
 
+// Find All Categories
 func (controller *CategoryControllerImpl) FindAll(c *fiber.Ctx) error {
-	categoryResponses := controller.CategoryService.FindAll(c.Context())
+	categoryResponses, err := controller.CategoryService.FindAll(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(web.WebResponse{
+			Code:   fiber.StatusInternalServerError,
+			Status: "Internal Server Error",
+			Data:   err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(web.WebResponse{
 		Code:   fiber.StatusOK,
 		Status: "OK",

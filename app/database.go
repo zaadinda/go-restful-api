@@ -1,19 +1,34 @@
 package app
 
 import (
-	"database/sql"
-	"github.com/aronipurwanto/go-restful-api/helper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
 	"time"
 )
 
-func NewDB() *sql.DB {
-	db, err := sql.Open("mysql", "root@tcp(localhost:3306)/go_restful_api")
-	helper.PanicIfError(err)
+// NewDB initializes the database connection using GORM
+func NewDB() *gorm.DB {
+	dsn := "root:@tcp(localhost:3306)/go_restful_api?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // Logging SQL queries
+	})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
-	db.SetMaxIdleConns(5)
-	db.SetMaxOpenConns(20)
-	db.SetConnMaxLifetime(60 * time.Minute)
-	db.SetConnMaxIdleTime(10 * time.Minute)
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get database instance: %v", err)
+	}
 
+	// Set database connection pool settings
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetMaxOpenConns(20)
+	sqlDB.SetConnMaxLifetime(60 * time.Minute)
+	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+
+	log.Println("Database connected successfully!")
 	return db
 }
