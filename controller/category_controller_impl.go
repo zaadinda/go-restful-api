@@ -1,9 +1,9 @@
 package controller
 
 import (
+	"github.com/aronipurwanto/go-restful-api/model/web"
+	"github.com/aronipurwanto/go-restful-api/service"
 	"github.com/gofiber/fiber/v2"
-	"programmerzamannow/belajar-golang-restful-api/model/web"
-	"programmerzamannow/belajar-golang-restful-api/service"
 	"strconv"
 )
 

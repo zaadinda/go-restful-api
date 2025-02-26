@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"database/sql"
+	"github.com/aronipurwanto/go-restful-api/exception"
+	"github.com/aronipurwanto/go-restful-api/helper"
+	"github.com/aronipurwanto/go-restful-api/model/domain"
+	"github.com/aronipurwanto/go-restful-api/model/web"
+	"github.com/aronipurwanto/go-restful-api/repository"
 	"github.com/go-playground/validator/v10"
-	"programmerzamannow/belajar-golang-restful-api/exception"
-	"programmerzamannow/belajar-golang-restful-api/helper"
-	"programmerzamannow/belajar-golang-restful-api/model/domain"
-	"programmerzamannow/belajar-golang-restful-api/model/web"
-	"programmerzamannow/belajar-golang-restful-api/repository"
 )
 
 type CategoryServiceImpl struct {

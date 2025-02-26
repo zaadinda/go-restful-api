@@ -1,21 +1,20 @@
 package app
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"programmerzamannow/belajar-golang-restful-api/controller"
-	"programmerzamannow/belajar-golang-restful-api/exception"
+	"github.com/aronipurwanto/go-restful-api/controller"
+	"github.com/aronipurwanto/go-restful-api/middleware"
+	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter(categoryController controller.CategoryController) *httprouter.Router {
-	router := httprouter.New()
+func NewRouter(app *fiber.App, categoryController controller.CategoryController) {
+	authMiddleware := middleware.NewAuthMiddleware()
 
-	router.GET("/api/categories", categoryController.FindAll)
-	router.GET("/api/categories/:categoryId", categoryController.FindById)
-	router.POST("/api/categories", categoryController.Create)
-	router.PUT("/api/categories/:categoryId", categoryController.Update)
-	router.DELETE("/api/categories/:categoryId", categoryController.Delete)
+	api := app.Group("/api", authMiddleware)
+	categories := api.Group("/categories")
 
-	router.PanicHandler = exception.ErrorHandler
-
-	return router
+	categories.Get("/", categoryController.FindAll)
+	categories.Get("/:categoryId", categoryController.FindById)
+	categories.Post("/", categoryController.Create)
+	categories.Put("/:categoryId", categoryController.Update)
+	categories.Delete("/:categoryId", categoryController.Delete)
 }
