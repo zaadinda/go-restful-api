@@ -7,6 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type CustomerRepository interface {
+	Save(ctx context.Context, customer domain.Customer) (domain.Customer, error)
+	Update(ctx context.Context, customer domain.Customer) (domain.Customer, error)
+	Delete(ctx context.Context, customer domain.Customer) error
+	FindById(ctx context.Context, customerId uint64) (domain.Customer, error)
+	FindAll(ctx context.Context) ([]domain.Customer, error)
+}
+
 type CustomerRepositoryImpl struct {
 	db *gorm.DB
 }
@@ -33,7 +41,7 @@ func (repository *CustomerRepositoryImpl) Delete(ctx context.Context, customer d
 	return repository.db.WithContext(ctx).Delete(&customer).Error
 }
 
-func (repository *CustomerRepositoryImpl) FindById(ctx context.Context, customerId string) (domain.Customer, error) {
+func (repository *CustomerRepositoryImpl) FindById(ctx context.Context, customerId uint64) (domain.Customer, error) {
 	var customer domain.Customer
 	err := repository.db.WithContext(ctx).First(&customer, "customer_id = ?", customerId).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

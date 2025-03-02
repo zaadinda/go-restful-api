@@ -12,7 +12,7 @@ func ToProductResponse(product domain.Product) web.ProductResponse {
 		Description: product.Description,
 		Price:       product.Price,
 		StockQty:    product.StockQty,
-		Category:    product.Category,
+		CategoryID:  product.CategoryId,
 		SKU:         product.SKU,
 		TaxRate:     product.TaxRate,
 	}
